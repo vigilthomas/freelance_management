@@ -22,21 +22,25 @@ function Root() {
 }
 
 const rootRoute = createRootRoute({ component: Root });
-const route = (path: string, component: () => JSX.Element) => createRoute({ getParentRoute: () => rootRoute, path, component });
 
+const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: DashboardPage });
+const clientsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/clients', component: ClientsPage });
+const projectsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/projects', component: ProjectsPage });
+const mastersRoute = createRoute({ getParentRoute: () => rootRoute, path: '/masters', component: MastersPage });
+const settingsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/settings', component: SettingsPage });
 export const clientDetailRoute = createRoute({ getParentRoute: () => rootRoute, path: '/clients/$id', component: ClientDetailPage });
 export const projectDetailRoute = createRoute({ getParentRoute: () => rootRoute, path: '/projects/$id', component: ProjectDetailPage });
 export const mastersKindRoute = createRoute({ getParentRoute: () => rootRoute, path: '/masters/$kind', component: MastersPage });
 
 const routeTree = rootRoute.addChildren([
-  route('/', DashboardPage),
-  route('/clients', ClientsPage),
+  indexRoute,
+  clientsRoute,
   clientDetailRoute,
-  route('/projects', ProjectsPage),
+  projectsRoute,
   projectDetailRoute,
-  route('/masters', MastersPage),
+  mastersRoute,
   mastersKindRoute,
-  route('/settings', SettingsPage),
+  settingsRoute,
 ]);
 
 export const router = createRouter({ routeTree, defaultPreload: 'intent' });
