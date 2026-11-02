@@ -26,6 +26,7 @@ services:
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
       ADMIN_IPS: ${ADMIN_IPS:-127.0.0.1/32}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1/32}
     volumes:
       - caddy_data:/data
       - caddy_config:/config

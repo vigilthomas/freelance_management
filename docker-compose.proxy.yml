@@ -1,0 +1,7 @@
+# For a server where another reverse proxy (e.g. nginx) already owns ports 80/443 and does HTTPS.
+# Enable it from .env with COMPOSE_FILE=docker-compose.yml:docker-compose.proxy.yml (see docs/DEPLOY.md).
+services:
+  web:
+    # Plain HTTP on loopback only; the outer proxy terminates TLS and forwards here.
+    ports: !override
+      - "127.0.0.1:${WEB_PORT:-8095}:80"

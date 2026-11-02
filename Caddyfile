@@ -1,11 +1,22 @@
+# Behind another reverse proxy (e.g. nginx doing HTTPS), list its IPs/CIDRs in TRUSTED_PROXIES
+# so the admin gate and PocketBase's rate limits see the real client IP.
+{
+	servers {
+		trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}
+		trusted_proxies_strict
+	}
+}
+
 {$DOMAIN} {
 	encode zstd gzip
 
 	# PocketBase admin dashboard: only from the IPs listed in ADMIN_IPS.
 	handle /_/* {
-		@blocked not remote_ip {$ADMIN_IPS}
+		@blocked not client_ip {$ADMIN_IPS}
 		respond @blocked "Forbidden" 403
-		reverse_proxy pocketbase:8090
+		reverse_proxy pocketbase:8090 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 
 	# API + realtime (SSE streams are flushed automatically).
@@ -13,16 +24,18 @@
 		# Superuser and server-admin endpoints (the dashboard's API, backups, settings) only from ADMIN_IPS.
 		@adminApi {
 			path /api/collections/_superusers/* /api/settings* /api/backups* /api/logs* /api/crons* /api/collections/meta/*
-			not remote_ip {$ADMIN_IPS}
+			not client_ip {$ADMIN_IPS}
 		}
 		respond @adminApi "Forbidden" 403
 		# Collection management (list/view/edit/delete/truncate/import), not the records under it.
 		@adminCollections {
 			path_regexp ^/api/collections(/[^/]+)?(/truncate)?/?$
-			not remote_ip {$ADMIN_IPS}
+			not client_ip {$ADMIN_IPS}
 		}
 		respond @adminCollections "Forbidden" 403
-		reverse_proxy pocketbase:8090
+		reverse_proxy pocketbase:8090 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 
 	# The PWA: hashed assets cache forever; the shell and service worker always revalidate.

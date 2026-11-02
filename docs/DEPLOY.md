@@ -33,6 +33,31 @@ Then open `https://<DOMAIN>` and sign in. To install it on your phone:
 - **Android (Chrome):** menu → *Install app*.
 - **iPhone (Safari):** Share → *Add to Home Screen*. This is also what enables notifications later.
 
+### Behind an existing nginx
+
+If nginx (or another proxy) already uses ports 80/443 on the server, let it do HTTPS and run Forge on a loopback port. In `.env`, uncomment the proxy block at the bottom of `.env.example` (`COMPOSE_FILE`, `WEB_PORT`, `DOMAIN=http://…`, `TRUSTED_PROXIES`), then add an nginx site and get a certificate with `sudo certbot --nginx -d <DOMAIN>`:
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name work.example.com;
+    client_max_body_size 20m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8095;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        # Overwrite, never append: the client cannot spoof its IP.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # Realtime (SSE) streams.
+        proxy_buffering off;
+        proxy_read_timeout 1h;
+    }
+}
+```
+
 ## 4. Updating
 
 ```bash
