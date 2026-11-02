@@ -24,7 +24,9 @@ jobs:
           KNOWN_HOST: expense.atovian.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICz4qvWuxwHMQTd9sE646g26By7aU0slXz00vw6KimLZ
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          [ -n "$SSH_KEY" ] || { echo "::error::Add the DEPLOY_SSH_KEY secret (Settings → Secrets and variables → Actions)."; exit 1; }
+          # Strip CR: a key pasted from Windows keeps CRLF line endings, which OpenSSH can't load.
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
           printf '%s\n' "$KNOWN_HOST" > ~/.ssh/known_hosts
           # The deploy key can only run the deploy script, which reads this archive on stdin.
           git archive --format=tar.gz HEAD | ssh -T -i ~/.ssh/deploy -o BatchMode=yes ubuntu@expense.atovian.com
