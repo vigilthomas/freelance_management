@@ -107,3 +107,8 @@ export interface Project extends BaseRecord {
   color: string;
   notes: string;
 }
+
+/** File fields per collection: synced as uploads, never as plain values. */
+export const FILE_FIELDS: Partial<Record<CollectionName, string[]>> = {
+  settings: ['logo'],
+};
