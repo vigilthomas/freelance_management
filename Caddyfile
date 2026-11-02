@@ -10,6 +10,18 @@
 
 	# API + realtime (SSE streams are flushed automatically).
 	handle /api/* {
+		# Superuser and server-admin endpoints (the dashboard's API, backups, settings) only from ADMIN_IPS.
+		@adminApi {
+			path /api/collections/_superusers/* /api/settings* /api/backups* /api/logs* /api/crons* /api/collections/meta/*
+			not remote_ip {$ADMIN_IPS}
+		}
+		respond @adminApi "Forbidden" 403
+		# Collection management (list/view/edit/delete/truncate/import), not the records under it.
+		@adminCollections {
+			path_regexp ^/api/collections(/[^/]+)?(/truncate)?/?$
+			not remote_ip {$ADMIN_IPS}
+		}
+		respond @adminCollections "Forbidden" 403
 		reverse_proxy pocketbase:8090
 	}
 

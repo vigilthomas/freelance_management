@@ -26,6 +26,8 @@ nano .env                    # set DOMAIN, ADMIN_EMAIL, ADMIN_IPS
 bash scripts/setup.sh        # builds, starts, asks for your password, creates your login
 ```
 
+At the end it prints a separate, random **admin dashboard password**. Save it in your password manager: it is shown once, and it is deliberately different from the app password you type on your phone.
+
 Then open `https://<DOMAIN>` and sign in. To install it on your phone:
 
 - **Android (Chrome):** menu → *Install app*.
@@ -45,7 +47,7 @@ Database migrations in `server/pb_migrations` apply automatically when PocketBas
 Two ways to open the PocketBase admin:
 
 - **SSH tunnel (default, nothing exposed):** run `ssh -L 8090:127.0.0.1:8090 you@your-server`, then open http://localhost:8090/_/ on your computer.
-- **Directly at `https://<DOMAIN>/_/`:** add your home IP to `ADMIN_IPS` in `.env` and run `docker compose up -d`. Everyone else gets 403.
+- **Directly at `https://<DOMAIN>/_/`:** add your home IP to `ADMIN_IPS` in `.env` and run `docker compose up -d`. Everyone else gets 403 — on the dashboard and on the admin API behind it (superuser login, settings, backups, logs, collection management). The app's own API stays open to your devices.
 
 ## 6. Backups
 
