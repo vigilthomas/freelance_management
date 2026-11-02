@@ -1,0 +1,39 @@
+# Production stack: Caddy (HTTPS + PWA) in front of PocketBase. Configure via .env (see .env.example).
+services:
+  pocketbase:
+    build: ./server
+    restart: unless-stopped
+    # Loopback only: reachable from the server itself or an SSH tunnel, never from the internet.
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - pb_data:/pb/pb_data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8090/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      ADMIN_IPS: ${ADMIN_IPS:-127.0.0.1/32}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+
+volumes:
+  pb_data:
+  caddy_data:
+  caddy_config:

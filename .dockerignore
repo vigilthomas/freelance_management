@@ -1,0 +1,11 @@
+.git
+.superpowers
+.claude
+**/node_modules
+app/dist
+app/dev-dist
+app/test-results
+app/playwright-report
+server/bin
+server/pb_data
+.env

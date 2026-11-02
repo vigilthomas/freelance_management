@@ -1,7 +1,32 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "web", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "app", "run", "dev", "--", "--port", "5173", "--strictPort"], "port": 5173 },
-    { "name": "pocketbase", "runtimeExecutable": "bash", "runtimeArgs": ["scripts/pb-dev.sh"], "port": 8090 }
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "app",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "pocketbase",
+      "runtimeExecutable": "server/bin/pocketbase.exe",
+      "runtimeArgs": [
+        "serve",
+        "--http=127.0.0.1:8090",
+        "--dir=server/pb_data",
+        "--migrationsDir=server/pb_migrations",
+        "--hooksDir=server/pb_hooks"
+      ],
+      "port": 8090
+    }
   ]
 }
