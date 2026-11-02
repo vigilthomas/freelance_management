@@ -1,0 +1,124 @@
+/* Mirrors MASTER.md — do not add values that are not defined there. */
+:root {
+  --paper: #f6f3ee;
+  --surface: #ffffff;
+  --surface-2: #efebe4;
+  --ink: #15171c;
+  --muted: #6b6f7a;
+  --line: #e4dfd6;
+  --accent: #ff5a36;
+  --accent-ink: #ffffff;
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #dc2626;
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  --shadow-1: 0 1px 2px rgb(21 23 28 / 0.06);
+  --shadow-2: 0 6px 20px -6px rgb(21 23 28 / 0.14);
+  --shadow-3: 0 24px 60px -12px rgb(21 23 28 / 0.28);
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 160ms;
+  --t-normal: 240ms;
+
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-ui: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #0f1115;
+  --surface: #181b21;
+  --surface-2: #1f232b;
+  --ink: #f2efe9;
+  --muted: #8b90a0;
+  --line: #2a2e37;
+  --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.12);
+  --shadow-2: 0 6px 20px -6px rgb(0 0 0 / 0.28);
+  --shadow-3: 0 24px 60px -12px rgb(0 0 0 / 0.56);
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Hero texture: slow mesh drift + grain. The only looping decoration allowed by the interaction thesis. */
+.hero-mesh {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.hero-mesh::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  z-index: -2;
+  background:
+    radial-gradient(40% 40% at 20% 30%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%),
+    radial-gradient(35% 35% at 80% 20%, color-mix(in srgb, #ffb36b 45%, transparent), transparent 70%),
+    radial-gradient(45% 45% at 60% 85%, color-mix(in srgb, #7c5cff 30%, transparent), transparent 70%);
+  filter: blur(40px);
+  animation: mesh-drift 24s ease-in-out infinite alternate;
+}
+.hero-mesh::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes mesh-drift {
+  from {
+    transform: translate3d(-4%, -2%, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) rotate(8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+}

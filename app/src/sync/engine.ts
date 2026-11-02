@@ -7,6 +7,13 @@ import { AuthExpiredError, type RemoteRecord, type Transport } from './transport
 
 const EPOCH = '1970-01-01 00:00:00.000Z';
 
+let trigger: (() => void) | null = null;
+
+/** Asks the running sync loop (if any) to run now, e.g. a Retry button or after re-login. */
+export function requestSync(): void {
+  trigger?.();
+}
+
 /** Merges one server record into the local store, respecting pending local edits. */
 export async function applyRemote(c: CollectionName, remote: RemoteRecord, target: ForgeDB = db): Promise<void> {
   const table = target.coll(c);
@@ -105,6 +112,7 @@ export function startSync(t: Transport, target: ForgeDB = db): () => void {
     void ensureRealtime();
   };
 
+  trigger = () => void run();
   const onOnline = () => void run();
   window.addEventListener('online', onOnline);
   const interval = setInterval(run, 30_000);
@@ -117,6 +125,7 @@ export function startSync(t: Transport, target: ForgeDB = db): () => void {
 
   return () => {
     stopped = true;
+    trigger = null;
     clearInterval(interval);
     clearTimeout(debounce);
     window.removeEventListener('online', onOnline);
