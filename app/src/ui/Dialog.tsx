@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { PresenceBoundary } from './PresenceBoundary';
 
 interface DialogProps {
   open: boolean;
@@ -21,7 +22,7 @@ export function Dialog({ open, onClose, title, children, actions }: DialogProps)
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[60] grid place-items-center p-4">
+        <div key="dialog" className="fixed inset-0 z-[60] grid place-items-center p-4">
           <motion.div
             className="absolute inset-0 bg-black/35 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
@@ -40,8 +41,14 @@ export function Dialog({ open, onClose, title, children, actions }: DialogProps)
             className="relative w-full max-w-md rounded-lg border border-line bg-surface p-6 shadow-3"
           >
             <h2 className="mb-2 text-[1.25rem] font-bold">{title}</h2>
-            <div className="text-[0.875rem] text-muted">{children}</div>
-            {actions && <div className="mt-6 flex justify-end gap-2">{actions}</div>}
+            <div className="text-[0.875rem] text-muted">
+              <PresenceBoundary>{children}</PresenceBoundary>
+            </div>
+            {actions && (
+              <div className="mt-6 flex justify-end gap-2">
+                <PresenceBoundary>{actions}</PresenceBoundary>
+              </div>
+            )}
           </motion.div>
         </div>
       )}

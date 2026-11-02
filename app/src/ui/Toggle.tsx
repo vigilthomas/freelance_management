@@ -14,12 +14,15 @@ export function Toggle({ checked, onChange, label, hint }: { checked: boolean; o
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={cn(
-          'relative flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition-colors duration-fast',
-          checked ? 'justify-end bg-accent' : 'justify-start bg-line',
-        )}
+        className={cn('relative flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition-colors duration-fast', checked ? 'bg-accent' : 'bg-line')}
       >
-        <motion.span layout transition={{ type: 'spring', stiffness: 420, damping: 34 }} className="h-5 w-5 rounded-full bg-white shadow-1" />
+        {/* Transform-only knob: a `layout` animation here would hold an enclosing AnimatePresence open on exit. */}
+        <motion.span
+          initial={false}
+          animate={{ x: checked ? 20 : 0 }}
+          transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+          className="h-5 w-5 rounded-full bg-white shadow-1"
+        />
       </button>
     </label>
   );

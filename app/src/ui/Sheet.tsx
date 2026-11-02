@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { PresenceBoundary } from './PresenceBoundary';
 import { useMediaQuery } from './useMediaQuery';
 
 interface SheetProps {
@@ -33,7 +34,7 @@ export function Sheet({ open, onClose, title, children, footer }: SheetProps) {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50">
+        <div key="sheet" className="fixed inset-0 z-50">
           <motion.div
             className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
@@ -64,10 +65,12 @@ export function Sheet({ open, onClose, title, children, footer }: SheetProps) {
                 <X size={18} />
               </button>
             </header>
-            <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <PresenceBoundary>{children}</PresenceBoundary>
+            </div>
             {footer && (
               <footer className="flex justify-end gap-2 border-t border-line px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-                {footer}
+                <PresenceBoundary>{footer}</PresenceBoundary>
               </footer>
             )}
           </motion.div>

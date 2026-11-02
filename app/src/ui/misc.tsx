@@ -62,7 +62,8 @@ export function ColorSwatch({ value, onChange, label = 'Color' }: { value: strin
             style={{ background: c }}
           >
             {value.toLowerCase() === c.toLowerCase() && (
-              <motion.span layoutId={`swatch-${label}`} className="absolute -inset-1 rounded-full border-2 border-ink" />
+              // No layoutId here: a shared-layout element inside a closing Sheet kept AnimatePresence from ever removing it.
+              <motion.span initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.16 }} className="absolute -inset-1 rounded-full border-2 border-ink" />
             )}
           </button>
         ))}
