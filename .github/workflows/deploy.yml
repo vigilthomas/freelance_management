@@ -27,4 +27,4 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
           printf '%s\n' "$KNOWN_HOST" > ~/.ssh/known_hosts
           # The deploy key can only run the deploy script, which reads this archive on stdin.
-          git archive --format=tar.gz HEAD | ssh -i ~/.ssh/deploy -o BatchMode=yes ubuntu@expense.atovian.com
+          git archive --format=tar.gz HEAD | ssh -T -i ~/.ssh/deploy -o BatchMode=yes ubuntu@expense.atovian.com

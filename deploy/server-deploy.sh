@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 # Runs on the server as the forced command of the CI deploy key (installed at /usr/local/bin/forge-deploy).
-# Reads a .tar.gz of the repo on stdin, swaps it in for /opt/forge (keeping .env), rebuilds,
+# Reads a .tar.gz of the repo on stdin, syncs it into /opt/forge (keeping .env), rebuilds,
 # and rolls back to the previous copy if the app doesn't come up healthy.
 set -euo pipefail
-APP=/opt/forge NEW=/opt/forge.new PREV=/opt/forge.prev
+APP=/opt/forge STAGE=$HOME/.forge-deploy
+NEW=$STAGE/new PREV=$STAGE/prev
+sync_into() { rsync -a --delete --exclude /.env "$1/" "$2/"; }
 
 exec 9>/tmp/forge-deploy.lock
 flock -n 9 || { echo "Another deploy is running."; exit 1; }
 
-rm -rf "$NEW"; mkdir -p "$NEW"
+mkdir -p "$STAGE"; rm -rf "$NEW" "$PREV"; mkdir -p "$NEW" "$PREV"
 tar -xzf - -C "$NEW"
-cp -p "$APP/.env" "$NEW/.env"
 set -a; . "$APP/.env"; set +a
 
 healthy() {
@@ -21,7 +22,8 @@ healthy() {
   return 1
 }
 
-rm -rf "$PREV"; mv "$APP" "$PREV"; mv "$NEW" "$APP"
+sync_into "$APP" "$PREV"
+sync_into "$NEW" "$APP"
 cd "$APP"
 echo "Building and starting…"
 if docker compose up -d --build --remove-orphans && healthy; then
@@ -32,7 +34,7 @@ fi
 
 echo "Deploy failed — rolling back to the previous version."
 docker compose logs --tail 30 || true
-rm -rf "$NEW"; mv "$APP" "$NEW"; mv "$PREV" "$APP"
-cd "$APP" && docker compose up -d --build --remove-orphans
+sync_into "$PREV" "$APP"
+docker compose up -d --build --remove-orphans
 healthy && echo "Rolled back; previous version is running." || echo "Rollback is unhealthy too — check the server."
 exit 1

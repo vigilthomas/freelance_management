@@ -1,4 +1,6 @@
 # Production stack: Caddy (HTTPS + PWA) in front of PocketBase. Configure via .env (see .env.example).
+# Fixed project name: the data volume stays forge_pb_data whatever folder this runs from.
+name: forge
 services:
   pocketbase:
     build: ./server
