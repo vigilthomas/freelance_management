@@ -17,17 +17,23 @@ interface SheetProps {
 export function Sheet({ open, onClose, title, children, footer }: SheetProps) {
   const desktop = useMediaQuery('(min-width: 768px)');
   const panel = useRef<HTMLDivElement>(null);
+  // Parents pass a fresh inline onClose on every render; keep it in a ref so re-renders never re-run the focus effect.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeRef.current();
     document.addEventListener('keydown', onKey);
-    const t = setTimeout(() => panel.current?.querySelector<HTMLElement>('input,select,textarea,button')?.focus(), 60);
+    const t = setTimeout(() => {
+      const el = panel.current;
+      (el?.querySelector<HTMLElement>('input,select,textarea') ?? el?.querySelector<HTMLElement>('button'))?.focus();
+    }, 60);
     return () => {
       document.removeEventListener('keydown', onKey);
       clearTimeout(t);
     };
-  }, [open, onClose]);
+  }, [open]);
 
   const offscreen = desktop ? { x: '100%' } : { y: '100%' };
 

@@ -9,6 +9,8 @@ interface MoneyInputProps {
   decimals: number;
   symbol?: string;
   onChange(minor: number | null): void;
+  /** Told whether the text is usable (empty counts as valid), so forms can tell "empty" from "garbage". */
+  onValidity?(valid: boolean): void;
   /** Error from the parent form (e.g. "Required"); local parse errors take precedence. */
   error?: string;
   hint?: string;
@@ -16,7 +18,7 @@ interface MoneyInputProps {
 }
 
 /** Amount field that edits integer minor units. Empty, invalid and negative input all report null. */
-export function MoneyInput({ label, value, decimals, symbol, onChange, error, hint, className }: MoneyInputProps) {
+export function MoneyInput({ label, value, decimals, symbol, onChange, onValidity, error, hint, className }: MoneyInputProps) {
   const [text, setText] = useState(value === null ? '' : fromMinor(value, decimals));
   const [localError, setLocalError] = useState('');
 
@@ -30,18 +32,22 @@ export function MoneyInput({ label, value, decimals, symbol, onChange, error, hi
     setText(next);
     if (next.trim() === '') {
       setLocalError('');
+      onValidity?.(true);
       onChange(null);
       return;
     }
     const minor = toMinor(next, decimals);
     if (minor === null) {
       setLocalError(decimals ? 'Enter an amount like 1500 or 1,250.50' : 'Enter a whole amount like 1500');
+      onValidity?.(false);
       onChange(null);
     } else if (minor < 0) {
       setLocalError('Must be 0 or more');
+      onValidity?.(false);
       onChange(null);
     } else {
       setLocalError('');
+      onValidity?.(true);
       onChange(minor);
     }
   }

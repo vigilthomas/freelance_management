@@ -32,3 +32,18 @@ test('closed Dialog is removed from the DOM', async () => {
   rerender(ui(false));
   await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(), { timeout: 3000 });
 });
+
+test('Sheet focuses the first field and keeps focus where the user is typing across re-renders', async () => {
+  const ui = () => (
+    <Sheet open onClose={() => {}} title="Edit thing">
+      <Input label="Name" />
+      <Input label="Email" />
+    </Sheet>
+  );
+  const { rerender } = render(ui());
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Name')));
+  screen.getByLabelText('Email').focus();
+  rerender(ui()); // a new inline onClose, as every parent passes on each render
+  await new Promise((r) => setTimeout(r, 120));
+  expect(document.activeElement).toBe(screen.getByLabelText('Email'));
+});

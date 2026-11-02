@@ -68,6 +68,8 @@ export function ProjectForm({ open, onClose, project, defaultClientId, onSaved }
   const [d, setD] = useState<Draft>(() => toDraft(project));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  // MoneyInput reports null for both empty and unparseable text; only empty may become 0 ("use the client's rate").
+  const [badAmount, setBadAmount] = useState<{ hourly_rate?: boolean; fixed_price?: boolean }>({});
   // Once the user picks a currency by hand, changing the client no longer overrides it.
   const currencyTouched = useRef(!!project);
 
@@ -76,6 +78,7 @@ export function ProjectForm({ open, onClose, project, defaultClientId, onSaved }
     currencyTouched.current = !!project;
     setD(toDraft(project, clients.find((c) => c.id === defaultClientId), defaultStatus));
     setErrors({});
+    setBadAmount({});
   }, [open, project]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Status default arrives asynchronously from the local DB.
@@ -93,6 +96,8 @@ export function ProjectForm({ open, onClose, project, defaultClientId, onSaved }
   }
 
   async function save() {
+    const amountField = d.billing_type === 'fixed' ? 'fixed_price' : 'hourly_rate';
+    if (badAmount[amountField]) return;
     const data = {
       client: d.client, name: d.name, status: d.status, billing_type: d.billing_type,
       hourly_rate: d.hourly_rate ?? 0, fixed_price: d.billing_type === 'fixed' ? (d.fixed_price ?? 0) : 0,
@@ -159,6 +164,7 @@ export function ProjectForm({ open, onClose, project, defaultClientId, onSaved }
                 decimals={cur?.decimals ?? 2}
                 symbol={cur?.symbol}
                 onChange={(v) => set('hourly_rate', v)}
+                onValidity={(ok) => setBadAmount((b) => ({ ...b, hourly_rate: !ok }))}
                 error={errors.hourly_rate}
                 hint="Empty = use the client’s rate"
               />
@@ -169,6 +175,7 @@ export function ProjectForm({ open, onClose, project, defaultClientId, onSaved }
                 decimals={cur?.decimals ?? 2}
                 symbol={cur?.symbol}
                 onChange={(v) => set('fixed_price', v)}
+                onValidity={(ok) => setBadAmount((b) => ({ ...b, fixed_price: !ok }))}
                 error={errors.fixed_price}
               />
             )}
