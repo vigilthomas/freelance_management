@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
-import { Archive, ArchiveRestore, ArrowLeft, FolderKanban, Mail, MapPin, Pencil, Phone, Receipt, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, ArrowLeft, FolderKanban, Mail, MapPin, Pencil, Phone, Plus, Receipt, Trash2 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useRow, useRows } from '../../data/hooks';
 import { put, restore, softDelete } from '../../data/repo';
@@ -12,6 +12,7 @@ import { Badge, Card, EmptyState } from '../../ui/misc';
 import { itemVariants, listVariants } from '../../ui/motion';
 import { useToast } from '../../ui/Toast';
 import { useMasterMap } from '../masters/MasterSelect';
+import { ProjectForm } from '../projects/ProjectForm';
 import { ClientForm } from './ClientForm';
 
 function InfoRow({ icon, children }: { icon: ReactNode; children: ReactNode }) {
@@ -32,6 +33,7 @@ export function ClientDetailPage() {
   const terms = useMasterMap('payment_terms');
   const statuses = useMasterMap('project_statuses');
   const [editing, setEditing] = useState(false);
+  const [newProject, setNewProject] = useState(false);
   const { show } = useToast();
 
   if (client === undefined) return null;
@@ -90,6 +92,7 @@ export function ClientDetailPage() {
         <motion.section variants={itemVariants} className="order-2 lg:order-1">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[1.25rem] font-bold">Projects</h2>
+            <Button size="sm" variant="secondary" icon={<Plus size={15} />} onClick={() => setNewProject(true)}>New project</Button>
           </div>
           {projects.length === 0 ? (
             <EmptyState icon={<FolderKanban size={24} />} title="No projects yet" body="Projects for this client will show up here." />
@@ -149,6 +152,7 @@ export function ClientDetailPage() {
         </motion.aside>
       </motion.div>
 
+      <ProjectForm open={newProject} onClose={() => setNewProject(false)} defaultClientId={id} />
       <ClientForm open={editing} onClose={() => setEditing(false)} client={client} />
     </div>
   );
