@@ -1,0 +1,30 @@
+# Every push to main ships the code to the server and rebuilds the stack there (see deploy/server-deploy.sh).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ship to server and rebuild
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          # The server's public host key, so the connection can't be intercepted.
+          KNOWN_HOST: expense.atovian.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICz4qvWuxwHMQTd9sE646g26By7aU0slXz00vw6KimLZ
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOST" > ~/.ssh/known_hosts
+          # The deploy key can only run the deploy script, which reads this archive on stdin.
+          git archive --format=tar.gz HEAD | ssh -i ~/.ssh/deploy -o BatchMode=yes ubuntu@expense.atovian.com
