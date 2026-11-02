@@ -1,4 +1,8 @@
+import { motion } from 'framer-motion';
 import { APP_NAME } from '../config';
+import { useRow } from '../data/hooks';
+import { SETTINGS_ID, type Settings } from '../data/schema';
+import { useBusinessLogo } from '../features/settings/logo';
 
 export function LogoMark({ size = 32 }: { size?: number }) {
   return (
@@ -9,11 +13,31 @@ export function LogoMark({ size = 32 }: { size?: number }) {
   );
 }
 
+/** The business's own logo and name once set in Settings; the Forge mark until then. */
 export function Logo({ collapsed }: { collapsed?: boolean }) {
+  const settings = useRow<Settings>('settings', SETTINGS_ID);
+  const logo = useBusinessLogo();
+  const name = settings?.business_name?.trim() || APP_NAME;
+
   return (
-    <span className="flex items-center gap-2.5">
-      <LogoMark />
-      {!collapsed && <span className="font-display text-[1.375rem] font-extrabold tracking-tight">{APP_NAME}</span>}
+    <span className="flex min-w-0 items-center gap-2.5" title={collapsed ? name : undefined}>
+      {logo ? (
+        <motion.img
+          key={logo}
+          src={logo}
+          alt=""
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="h-9 w-9 shrink-0 rounded-[10px] border border-line bg-surface object-cover shadow-1"
+        />
+      ) : (
+        <LogoMark />
+      )}
+      {!collapsed && (
+        <span className="truncate font-display text-[1.25rem] font-extrabold leading-tight tracking-tight" aria-label={name}>
+          {name}
+        </span>
+      )}
     </span>
   );
 }

@@ -42,10 +42,10 @@ export function Sidebar({ onSignInAgain }: { onSignInAgain(): void }) {
         collapsed ? 'w-[76px]' : 'w-[248px]',
       )}
     >
-      <div className={cn('mb-8 flex items-center px-2', collapsed ? 'justify-center' : 'justify-between')}>
+      <div className={cn('mb-8 flex items-center gap-2 px-2', collapsed ? 'justify-center' : 'justify-between')}>
         <Logo collapsed={collapsed} />
         {!collapsed && (
-          <button onClick={toggle} aria-label="Collapse sidebar" className="rounded-md p-1.5 text-muted hover:bg-surface-2 hover:text-ink">
+          <button onClick={toggle} aria-label="Collapse sidebar" className="shrink-0 rounded-md p-1.5 text-muted hover:bg-surface-2 hover:text-ink">
             <PanelLeftClose size={18} />
           </button>
         )}

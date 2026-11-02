@@ -129,3 +129,15 @@ h3,
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Checkerboard behind the logo cropper, so transparent padding is visible. */
+.logo-crop-stage {
+  background-color: var(--surface-2);
+  background-image: conic-gradient(var(--line) 25%, transparent 0 50%, var(--line) 0 75%, transparent 0);
+  background-size: 16px 16px;
+}
+.logo-crop-stage .reactEasyCrop_CropArea {
+  border-radius: 12px;
+  color: color-mix(in srgb, var(--paper) 72%, transparent);
+  border-color: var(--accent);
+}

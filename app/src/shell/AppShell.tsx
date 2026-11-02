@@ -2,6 +2,9 @@ import { useRouterState } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { useState, type ReactNode } from 'react';
 import { LoginForm } from '../auth/LoginPage';
+import { useRow } from '../data/hooks';
+import { SETTINGS_ID, type Settings } from '../data/schema';
+import { useBusinessLogo } from '../features/settings/logo';
 import { requestSync } from '../sync/engine';
 import { Dialog } from '../ui/Dialog';
 import { pageVariants } from '../ui/motion';
@@ -9,11 +12,13 @@ import { BottomNav } from './BottomNav';
 import { Logo } from './Logo';
 import { Sidebar } from './Sidebar';
 import { SyncIndicator } from './SyncIndicator';
+import { useDocumentBrand } from './useDocumentBrand';
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [reauth, setReauth] = useState(false);
   const openReauth = () => setReauth(true);
+  useDocumentBrand(useRow<Settings>('settings', SETTINGS_ID)?.business_name, useBusinessLogo());
 
   return (
     <div className="flex min-h-dvh bg-paper">

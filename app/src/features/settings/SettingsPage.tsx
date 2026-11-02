@@ -118,7 +118,7 @@ export function SettingsPage() {
         }}
       >
         <Section title="Business" description="Shown on invoices and exports.">
-          <LogoField settings={settings} picked={logo} onPick={setLogo} />
+          <LogoField picked={logo} onPick={setLogo} />
           <Input label="Business name" value={d.business_name} onChange={(e) => set('business_name', e.target.value)} error={errors.business_name} />
           <div className="grid gap-5 sm:grid-cols-2">
             <Input label="Email" type="email" value={d.email} onChange={(e) => set('email', e.target.value)} error={errors.email} />
