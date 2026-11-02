@@ -1,6 +1,6 @@
 import { db, resetDb } from './db';
 import { get, pendingCount, put, restore, softDelete } from './repo';
-import type { Client } from './schema';
+import type { Client, Settings } from './schema';
 
 beforeEach(async () => {
   await resetDb();
@@ -27,7 +27,7 @@ test('second put of same record coalesces to one outbox entry with latest payloa
 test('coalescing carries forward un-pushed files', async () => {
   const blob = new Blob(['x'], { type: 'image/png' });
   await put('settings', { id: 'settings0000000' }, { logo: blob });
-  await put('settings', { id: 'settings0000000', business_name: 'Me' });
+  await put<Settings>('settings', { id: 'settings0000000', business_name: 'Me' });
   const [entry] = await db.outbox.toArray();
   expect(entry.files?.logo).toMatchObject({ type: 'image/png' });
   expect(entry.files?.logo?.data.byteLength).toBe(1);
