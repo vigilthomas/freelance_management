@@ -122,3 +122,10 @@ h3,
     transition-duration: 0ms !important;
   }
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
