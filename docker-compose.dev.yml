@@ -1,0 +1,8 @@
+services:
+  pocketbase:
+    build: ./server
+    ports: ["127.0.0.1:8090:8090"]
+    volumes:
+      - ./server/pb_data:/pb/pb_data
+      - ./server/pb_migrations:/pb/pb_migrations
+      - ./server/pb_hooks:/pb/pb_hooks
