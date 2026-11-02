@@ -10,6 +10,8 @@ export interface OutboxEntry {
   payload: BaseRecord;
   /** field → file to upload; null clears the file on the server */
   files?: Record<string, StoredFile | null>;
+  /** Set when the server rejected this change for good; it is skipped until retried, edited again or discarded. */
+  error?: string;
 }
 
 /** Files are queued as ArrayBuffers: Blobs in IndexedDB are unreliable on older Safari. */

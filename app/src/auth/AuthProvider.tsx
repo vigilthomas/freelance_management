@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { startSync } from '../sync/engine';
-import { setSyncState } from '../sync/status';
 import { createPbTransport } from '../sync/transport';
 import { logout } from './logout';
 import { pb } from './pb';
@@ -31,16 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
-    if (navigator.onLine) {
-      pb.collection('users')
-        .authRefresh()
-        .catch((err: { status?: number }) => {
-          if (err?.status === 401 || err?.status === 403) {
-            setSyncState({ state: 'error', authExpired: true, error: 'Session expired — sign in again' });
-          }
-        });
-    }
-    return startSync(createPbTransport(pb));
+    // The transport checks the session itself (a refresh on the first cycle, then every few minutes).
+    const stop = startSync(createPbTransport(pb));
+    return () => void stop();
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = useMemo<AuthValue>(

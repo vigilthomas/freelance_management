@@ -5,6 +5,7 @@ import { ForgeDB, resetDb } from '../data/db';
 import type { Client } from '../data/schema';
 import { newId } from '../lib/ids';
 import { syncOnce } from './engine';
+import { getSyncState } from './status';
 import { createPbTransport } from './transport';
 
 const PB_URL = process.env.PB_URL;
@@ -57,5 +58,39 @@ describe.skipIf(!PB_URL)('sync against PocketBase', () => {
     expect((await B.target.coll<Client>('clients').get(id))?.deleted).toBe(true);
 
     await A.pb.collection('clients').delete(id);
+  }, 20_000);
+
+  const client = (name: string) => ({
+    id: newId(), name, contact_name: '', email: '', phone: '', address: '', state_region: '', tax_id: '',
+    currency: '', default_hourly_rate: 0, payment_term: '', notes: '', archived: false, deleted: false, updated_at: Date.now(),
+  });
+
+  test('a revoked/tampered token surfaces as "sign in again" and keeps the outbox', async () => {
+    const A = await device('devAuth');
+    const [head, payload, sig] = A.pb.authStore.token.split('.');
+    A.pb.authStore.save(`${head}.${payload}.${sig.slice(0, -4)}AAAA`, A.pb.authStore.record);
+
+    await syncOnce(A.t, A.target);
+    expect(getSyncState()).toMatchObject({ state: 'error', authExpired: true });
+
+    await edit(A.target, client('Never pushed'));
+    await syncOnce(A.t, A.target);
+    expect(getSyncState()).toMatchObject({ state: 'error', authExpired: true, pending: 1 });
+    expect(await A.target.outbox.count()).toBe(1);
+  }, 20_000);
+
+  test('a change the server rejects is set aside and later changes still sync', async () => {
+    const A = await device('devReject');
+    const bad = client('x'.repeat(6000)); // over PocketBase's default text limit
+    const good = client('Int fine');
+    await edit(A.target, bad);
+    await edit(A.target, good);
+    await syncOnce(A.t, A.target);
+    expect(getSyncState()).toMatchObject({ state: 'error', failed: 1, pending: 0 });
+    const [left] = await A.target.outbox.toArray();
+    expect(left).toMatchObject({ id: bad.id });
+    expect(left.error).toMatch(/name/);
+    expect((await A.pb.collection('clients').getOne(good.id)).name).toBe('Int fine');
+    await A.pb.collection('clients').delete(good.id);
   }, 20_000);
 });

@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { requestSync } from '../sync/engine';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../data/db';
+import { discardFailed, requestSync, retryFailed } from '../sync/engine';
 import { useSyncStatus, type SyncState } from '../sync/status';
 import { Button } from '../ui/Button';
 import { cn } from '../ui/cn';
@@ -14,7 +16,7 @@ const DOT: Record<SyncState['state'], string> = {
 
 function label(s: SyncState): string {
   if (s.state === 'offline') return s.pending ? `Offline · ${s.pending} pending` : 'Offline';
-  if (s.state === 'error') return s.authExpired ? 'Sign in needed' : 'Sync error';
+  if (s.state === 'error') return s.authExpired ? 'Sign in needed' : s.failed ? `${s.failed} not saved` : 'Sync error';
   if (s.state === 'syncing') return 'Syncing…';
   return s.pending ? `${s.pending} pending` : 'Synced';
 }
@@ -31,6 +33,7 @@ export function SyncIndicator({ onSignInAgain, compact }: { onSignInAgain(): voi
   const s = useSyncStatus();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const failed = useLiveQuery(() => db.outbox.filter((e) => !!e.error).toArray(), []) ?? [];
 
   useEffect(() => {
     if (!open) return;
@@ -70,15 +73,28 @@ export function SyncIndicator({ onSignInAgain, compact }: { onSignInAgain(): voi
                 <dd className="text-ink">{ago(s.lastSyncedAt)}</dd>
               </div>
             </dl>
-            {s.error && !s.authExpired && <p className="mt-2 text-[0.75rem] text-danger">{s.error}</p>}
+            {s.error && !s.authExpired && !failed.length && <p className="mt-2 text-[0.75rem] text-danger">{s.error}</p>}
+            {failed.length > 0 && (
+              <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto" aria-label="Changes the server rejected">
+                {failed.map((e) => (
+                  <li key={e.seq} className="rounded-md border border-line p-2 text-[0.75rem]">
+                    <p className="truncate font-semibold">{String((e.payload as { name?: string }).name || e.collection.replace(/_/g, ' '))}</p>
+                    <p className="mt-0.5 break-words text-danger">{e.error}</p>
+                    <button type="button" onClick={() => void discardFailed(e.seq!)} className="mt-1 font-semibold text-muted underline-offset-2 hover:text-ink hover:underline">
+                      Discard this change
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="mt-4 flex gap-2">
               {s.authExpired ? (
                 <Button size="sm" className="flex-1" onClick={() => { setOpen(false); onSignInAgain(); }}>
                   Sign in again
                 </Button>
               ) : (
-                <Button size="sm" variant="secondary" className="flex-1" onClick={() => requestSync()}>
-                  Retry now
+                <Button size="sm" variant="secondary" className="flex-1" onClick={() => (failed.length ? void retryFailed() : requestSync())}>
+                  {failed.length ? 'Retry all' : 'Retry now'}
                 </Button>
               )}
             </div>
