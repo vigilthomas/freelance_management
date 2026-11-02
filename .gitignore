@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dev-dist/
+.env
+server/bin/
+server/pb_data/
+app/test-results/
+app/playwright-report/
+.superpowers/
