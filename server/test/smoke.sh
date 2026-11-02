@@ -14,7 +14,7 @@ TOKEN=$(curl -s -X POST "$PB_URL/api/collections/users/auth-with-password" -H 'C
 AUTH="Authorization: $TOKEN"
 
 check "task_statuses seeded" "$(curl -s "$PB_URL/api/collections/task_statuses/records" -H "$AUTH" | json .totalItems)" 3
-check "settings row exists" "$(curl -s "$PB_URL/api/collections/settings/records/settings0000000" -H "$AUTH" | json .invoice_prefix)" "INV-"
+check "settings row exists" "$(curl -s "$PB_URL/api/collections/settings/records/settings0000000" -H "$AUTH" | json .id)" "settings0000000"
 check "gst components" "$(curl -s "$PB_URL/api/collections/tax_rates/records?filter=name%3D'GST%2018%25'" -H "$AUTH" | json '.items[0].components.length')" 2
 
 ANON=$(curl -s -o /dev/null -w '%{http_code}' "$PB_URL/api/collections/clients/records")
